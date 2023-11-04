@@ -1,3 +1,4 @@
+// Use it at first as in-memory data store instead of DB 
 let courses = [
     {
         id: 1,
@@ -11,6 +12,4 @@ let courses = [
     },
 ]
 
-module.exports = {
-    courses
-}
+module.exports = { courses }
