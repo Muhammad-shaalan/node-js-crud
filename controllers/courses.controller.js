@@ -23,7 +23,7 @@ const getCourse = async (req, res)=>{
         if(course) {
             return res.json({status: httpStatusText.SUCCESS, data: {course}})
         } else {
-            return res.status(400).json({status: httpStatusText.FAIL, data: {course}})
+            return res.status(404).json({status: httpStatusText.FAIL, data: {course}})
         }
     } catch(err) {
         res.status(400).json({status: httpStatusText.ERROR, data: null, message: err.message})
@@ -52,7 +52,7 @@ const updateCourse =  async (req, res) => {
             if(course) {
                 return res.status(200).json({status: httpStatusText.SUCCESS, data: {course}})
             } else {
-                return res.status(400).json({status: httpStatusText.FAIL, data: {course }})
+                return res.status(404).json({status: httpStatusText.FAIL, data: {course}})
             }
         }
     } catch(err) {
@@ -68,7 +68,7 @@ const deleteCourse = async (req, res)=>{
         if(deletedCourse.deletedCount) {
             return res.status(200).json({status: httpStatusText.SUCCESS, data: null})
         } else {
-            return res.status(400).json({status: httpStatusText.FAIL, data: {deletedCourse}})
+            return res.status(404).json({status: httpStatusText.FAIL, data: {deletedCourse}})
         }
     } catch(err) {
         res.status(400).json({status: httpStatusText.ERROR, data: null, message: err.message})
