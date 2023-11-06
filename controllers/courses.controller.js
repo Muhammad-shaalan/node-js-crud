@@ -5,11 +5,15 @@ const Course = require("../models/course.model");
 const httpStatusText = require("../utils/httpStatusText");
 
 const getAllCourses = async (req, res)=>{
-    let page = req.query.page || 1;
-    let limit = req.query.limit || 2;
-    let skip = (page - 1) * limit;
-    const courses = await Course.find({}, {__v: false}).limit(limit).skip(skip);
-    res.json({status: httpStatusText.SUCCESS, data: {courses}})
+    try {
+        let page = +req.query.page || 1;
+        let limit = +req.query.limit || 2;
+        let skip = (page - 1) * limit;
+        const courses = await Course.find({}, {__v: false}).limit(limit).skip(skip);
+        res.json({status: httpStatusText.SUCCESS, data: {courses}})
+    } catch(err) {
+        res.status(400).json({status: httpStatusText.ERROR, data: null, message: err.message})
+    }
 }
 
 const getCourse = async (req, res)=>{
