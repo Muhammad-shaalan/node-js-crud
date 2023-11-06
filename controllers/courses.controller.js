@@ -4,76 +4,76 @@ const Course = require("../models/course.model");
 
 const httpStatusText = require("../utils/httpStatusText");
 
-const getAllCourses = async (req, res)=>{
-    try {
+const asyncWrapper = require("../middlewares/asyncWrapper")
+
+const AppError = require("../utils/appError");
+
+const getAllCourses = asyncWrapper(
+    async (req, res)=>{
         let page = +req.query.page || 1;
         let limit = +req.query.limit || 2;
         let skip = (page - 1) * limit;
         const courses = await Course.find({}, {__v: false}).limit(limit).skip(skip);
         res.json({status: httpStatusText.SUCCESS, data: {courses}})
-    } catch(err) {
-        res.status(400).json({status: httpStatusText.ERROR, data: null, message: err.message})
     }
-}
+)
 
-const getCourse = async (req, res)=>{
-    const courseId = req.params.courseId;
-    try {
+const getCourse = asyncWrapper(
+    async (req, res, next)=>{
+        const courseId = req.params.courseId;
         const course = await Course.findById(courseId);
-        if(course) {
-            return res.json({status: httpStatusText.SUCCESS, data: {course}})
-        } else {
-            return res.status(404).json({status: httpStatusText.FAIL, data: {course}})
+        if(!course) {
+            const error = AppError.create("Course not found", 404, httpStatusText.FAIL)
+            return next(error);
         }
-    } catch(err) {
-        res.status(400).json({status: httpStatusText.ERROR, data: null, message: err.message})
+        return res.json({status: httpStatusText.SUCCESS, data: {course}})
     }
-}
+)
 
-const addCourse = async (req, res) => {
-    const errors = validationResult(req);
-    if(!errors.isEmpty()) {
-        return res.status(400).json({status: httpStatusText.FAIL, data: {errors: errors.array()}})
-    } else {
+
+const addCourse = asyncWrapper(
+    async (req, res, next) => {
+        const errors = validationResult(req);
+        if(!errors.isEmpty()) {
+            const error = AppError.create(errors.array(), 400, httpStatusText.FAIL)
+            return next(error);
+        }
         const newCourse = new Course(req.body);
         await newCourse.save()
         return res.status(201).json({status: httpStatusText.SUCCESS, data: {course: newCourse}})
     }
-}
+)
 
-const updateCourse =  async (req, res) => {
-    const courseId = req.params.courseId;
-    const errors = validationResult(req);
-    try {
+const updateCourse =  asyncWrapper(
+    async (req, res, next) => {
+        const courseId = req.params.courseId;
+        const errors = validationResult(req);
         if(!errors.isEmpty()) {
-            return res.status(400).json({status: httpStatusText.FAIL, data: {errors: errors.array()}})
-        } else {
-            const course = await Course.findByIdAndUpdate(courseId, {$set: {...req.body}}, {new: true});
-            if(course) {
-                return res.status(200).json({status: httpStatusText.SUCCESS, data: {course}})
-            } else {
-                return res.status(404).json({status: httpStatusText.FAIL, data: {course}})
-            }
+            const error = AppError.create(errors.array(), 400, httpStatusText.FAIL)
+            return next(error);
         }
-    } catch(err) {
-        res.status(400).json({status: httpStatusText.ERROR, data: null, message: err.message})
+        const course = await Course.findByIdAndUpdate(courseId, {$set: {...req.body}}, {new: true});
+        if(course) {
+            return res.status(200).json({status: httpStatusText.SUCCESS, data: {course}})
+        } else {
+            const error = AppError.create("Course  not found", 404, httpStatusText.FAIL)
+            return next(error);
+        }
     }
-}
+)
 
-const deleteCourse = async (req, res)=>{
-    const courseId = req.params.courseId;
-    try {
+const deleteCourse = asyncWrapper(
+    async (req, res, next)=>{
+        const courseId = req.params.courseId;
         const deletedCourse = await Course.deleteOne({_id: courseId});
-        console.log(deletedCourse);
         if(deletedCourse.deletedCount) {
             return res.status(200).json({status: httpStatusText.SUCCESS, data: null})
         } else {
-            return res.status(404).json({status: httpStatusText.FAIL, data: {deletedCourse}})
+            const error = AppError.create("Course  not found", 404, httpStatusText.FAIL)
+            return next(error);
         }
-    } catch(err) {
-        res.status(400).json({status: httpStatusText.ERROR, data: null, message: err.message})
     }
-}
+)
 
 
 module.exports = {
