@@ -5,7 +5,10 @@ const Course = require("../models/course.model");
 const httpStatusText = require("../utils/httpStatusText");
 
 const getAllCourses = async (req, res)=>{
-    const courses = await Course.find();
+    let page = req.query.page || 1;
+    let limit = req.query.limit || 2;
+    let skip = (page - 1) * limit;
+    const courses = await Course.find({}, {__v: false}).limit(limit).skip(skip);
     res.json({status: httpStatusText.SUCCESS, data: {courses}})
 }
 
