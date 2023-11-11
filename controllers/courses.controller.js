@@ -30,7 +30,6 @@ const getCourse = asyncWrapper(
     }
 )
 
-
 const addCourse = asyncWrapper(
     async (req, res, next) => {
         const errors = validationResult(req);
@@ -74,7 +73,6 @@ const deleteCourse = asyncWrapper(
         }
     }
 )
-
 
 module.exports = {
     getAllCourses,
